@@ -14,6 +14,19 @@ Aricon is a simple GUI for ffmpeg written with python and Qt.
 
 * More features coming soon!
 
+#How to use:
+### To Burn subtitle file: 
+* Go to Subtitle Tools > Burn a sub file into the video > Select your files > After conversion is complete, Open your file.
+### To Convert video file to audio file:
+* Go to Video Tools > Convert to audio > Select your files > After conversion is complete, Open your file.
+### To Mute the Video:
+* Go to Video Tools > Mute the video > Select your files > After conversion is complete, Open your file.
+### To Compress the Video (Not fully functional, but it works!):
+* Go to Video Tools > Compress the video > Select your files > After conversion is complete, Open your file.
+### To Chnage the video's resulotion:
+* Go to Video Tools > Change resolution > Select your files and enter the resolution in this format : WidthxHeight > After conversion is complete, Open your file.
+###To View history file:
+* Go to File > History > You can view your history file and clear it or refresh it.
 
 ### I used persepolis download manager's papirus icon pack, here's their project link: 
 * https://github.com/persepolisdm/persepolis
