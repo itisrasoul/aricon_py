@@ -10,6 +10,7 @@ Aricon is a simple GUI for ffmpeg written with python and Qt.
 * Compress videos
 * Convert videos to audio tracks
 * Change the resulotion of videos
+* Mute videos 
 
 * More features coming soon!
 
