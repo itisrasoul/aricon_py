@@ -7,6 +7,7 @@ import os
 import subprocess as sp
 from ffmpeg_progress import start
 
+#Multithreading support
 class Worker(QRunnable):
     def __init__(self, fn, *args, **kwargs):
         super(Worker, self).__init__()
@@ -76,11 +77,17 @@ class MainWindow(QMainWindow):
 
         self.video_tools_menu = self.menubar.addMenu("Video Tools") #Add a menu for video tools to menubar
 
-        self.remove_video_action = QAction("Extract the audio from video") #action for removing video
-        self.remove_video_action.setIcon(QIcon("icons/no_video.png")) #set icon for action
+        self.remove_video_action = QAction("Convert to audio file") #action for removing video
+        self.remove_video_action.setIcon(QIcon("icons/play.svg")) #set icon for action
         self.remove_video_action.triggered.connect(self.novid_win) #sending the signal when action is triggered
         self.remove_video_action.setShortcut("Shift+Ctrl+A") #set shortcut for action
         self.video_tools_menu.addAction(self.remove_video_action)
+
+        self.remove_audio_action = QAction("Mute the video")
+        self.remove_audio_action.setIcon(QIcon("icons/play.svg"))
+        self.remove_audio_action.triggered.connect(self.noaudio_win_)
+        self.remove_audio_action.setShortcut("Shift+Ctrl+M")
+        self.video_tools_menu.addAction(self.remove_audio_action)
 
         self.compress_video_action = QAction("Compress the video (Using X265 codec)")
         self.compress_video_action.setIcon(QIcon("icons/play.svg"))
@@ -176,6 +183,46 @@ class MainWindow(QMainWindow):
         self.burn_win.setMinimumSize(500,150)
         self.burn_win.setMaximumSize(500,150)
         self.burn_win.show() #show the window
+    
+    def noaudio_win_(self):
+        self.noaudio_win = QDialog()
+        self.noaudio_win.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;") #dark style for myself
+        self.vbox_noaudio = QVBoxLayout()
+        self.noaudio_win.setLayout(self.vbox_noaudio)
+        self.hbox_in_noaudio = QHBoxLayout()
+        self.line_in_noaudio = QLineEdit()
+        self.btn_in_noaudio = QToolButton()
+        self.btn_in_noaudio.setText("...")
+        self.btn_in_noaudio.pressed.connect(lambda: self.open("vid_in_noaudio"))
+        self.lbl_in_noaudio = QLabel("Video Input: ")
+        for i in [self.lbl_in_noaudio, self.line_in_noaudio, self.btn_in_noaudio]:
+            self.hbox_in_noaudio.addWidget(i)
+        self.vbox_noaudio.addLayout(self.hbox_in_noaudio)
+        self.hbox_out_noaudio = QHBoxLayout()
+        self.line_out_noaudio = QLineEdit()
+        self.btn_out_noaudio = QToolButton()
+        self.btn_out_noaudio.setText("...")
+        self.btn_out_noaudio.pressed.connect(lambda: self.open("vid_out_noaudio"))
+        self.lbl_out_noaudio = QLabel("Video Output: ")
+        for i in [self.lbl_out_noaudio, self.line_out_noaudio, self.btn_out_noaudio]:
+            self.hbox_out_noaudio.addWidget(i)
+        self.vbox_noaudio.addLayout(self.hbox_out_noaudio)
+        self.hbox_btn_noaudio = QHBoxLayout()
+        self.start_noaudio = QPushButton("Start")
+        self.start_noaudio.setIcon(QIcon("icons/play.svg"))
+        self.start_noaudio.pressed.connect(lambda: self.start_("noaudio"))
+        self.cancel_noaudio = QPushButton("Cancel")
+        self.cancel_noaudio.setIcon(QIcon("icons/remove.svg"))
+        self.cancel_noaudio.pressed.connect(lambda: self.noaudio_win.close())
+        self.hbox_btn_noaudio.addWidget(self.start_noaudio)
+        self.hbox_btn_noaudio.addWidget(self.cancel_noaudio)
+        self.vbox_noaudio.addLayout(self.hbox_btn_noaudio)
+        self.vbox_noaudio.setAlignment(self.hbox_btn_noaudio, Qt.AlignBottom | Qt.AlignRight)
+        self.noaudio_win.setMinimumSize(650,120)
+        self.noaudio_win.setMaximumSize(650,120)
+        self.noaudio_win.setWindowTitle("Mute the Video")
+        self.noaudio_win.setWindowIcon(QIcon("icons/play.svg"))
+        self.noaudio_win.show()
 
     def novid_win(self):
         self.novid_win = QDialog()
@@ -216,7 +263,7 @@ class MainWindow(QMainWindow):
         self.vbox_novid.setAlignment(self.hbox_btn_novid, Qt.AlignBottom | Qt.AlignRight)
         self.novid_win.setMinimumSize(650,120)
         self.novid_win.setMaximumSize(650,120)
-        self.novid_win.setWindowTitle("Extract audio from video")
+        self.novid_win.setWindowTitle("Convert to audio")
         self.novid_win.setWindowIcon(QIcon("icons/play.svg"))
         self.novid_win.show()
 
@@ -322,6 +369,10 @@ class MainWindow(QMainWindow):
             self.progress(['ffmpeg', '-i', self.vid_in_novid, '-vn', '-acodec', 'libmp3lame', self.audio_out_novid], self.vid_in_novid, self.audio_out_novid, "Removed Video")
             self.command = [ '-vn', '-acodec', 'libmp3lame', self.audio_out_novid]
 
+        if mode == "noaudio":
+            self.progress(['ffmpeg', '-i', self.vid_in_noaudio, '-an', '-c', 'copy', self.vid_out_noaudio], self.vid_in_noaudio, self.vid_out_noaudio, "Removed the Audio Track")
+            self.command = [ '-an', '-c', 'copy', self.vid_out_noaudio]
+
         if mode == "compress":
             self.progress(['ffmpeg', '-i', self.vid_in_compress, self.vid_out_compress], self.vid_in_compress, self.vid_out_compress, "Video Compression")
             self.command = [ self.vid_out_compress]
@@ -343,13 +394,12 @@ class MainWindow(QMainWindow):
 
     def create_history(self,file_name,edit_option):
         self.history = open("arihis","a")
-        self.date = QDateTime.currentDateTime()
         self.history.write("\n============================================\nFile Name: {}\nConversion Date: {}\nOperation: {}".format(file_name,self.date.toString(),edit_option))
         self.history.close()
 
     def progress(self,cmd,file_name,input_,edit_mode):
         self.progress_win = QDialog()
-        #self.progress_win.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;") #dark style for myself
+        self.progress_win.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;") #dark style for myself
         self.vbox_progress = QVBoxLayout()
         self.progress_win.setLayout(self.vbox_progress)
         self.lbl_filename = QLabel("File Name: {}".format(file_name))
@@ -365,7 +415,7 @@ class MainWindow(QMainWindow):
             self.vbox_progress.setAlignment(i, Qt.AlignLeft)
         self.vbox_progress.addWidget(self.progressbar_)
         self.vbox_progress.addWidget(self.cancel_btn_progress)
-        self.cancel_btn_progress.pressed.connect(lambda: self.progress_win.close())
+        self.cancel_btn_progress.pressed.connect(lambda: self.cancel())
         self.vbox_progress.setAlignment(self.cancel_btn_progress, Qt.AlignBottom | Qt.AlignRight)
 
         self.progress_win.setWindowIcon(QIcon("icons/play.svg"))
@@ -376,9 +426,9 @@ class MainWindow(QMainWindow):
         self.file_name = file_name
         self.input_ = input_
         self.edit_mode = edit_mode
-        worker = Worker(self.progress_exec)
+        self.worker = Worker(self.progress_exec)
         self.threadpool = QThreadPool()
-        self.threadpool.start(worker)
+        self.threadpool.start(self.worker)
 
     def progress_exec(self):
         def ffmpeg_callback(infile: str, outfile: str, vstats_path: str):
@@ -402,6 +452,7 @@ class MainWindow(QMainWindow):
             #self.lbl_elapsed.setText("Elapsed Time: {}".format(round(elapsed)))
             #self.progressbar_.setValue(round(percent))
             self.progress_win.setWindowTitle("({}%){}".format(round(percent),self.input_))
+        self.date = QDateTime.currentDateTime()
         start(self.file_name,
         self.input_,
         ffmpeg_callback,
@@ -413,15 +464,15 @@ class MainWindow(QMainWindow):
         #if os.path.isfile(download_path):
             #osCommands.xdgOpen(download_path, 'folder', 'file')
         self.progress_win.close()
-        self.after_convert()
+        sp.Popen(["notify-send", "Operation Completed!", "--icon=$HOME/Aricon_python_git/icons/converter.svg"])
     
     def after_convert(self):
-        sp.Popen(['notify-send', "-icon='$HOME/Aricon_python_git/converter.svg'", 'Operation Completed!'])
+        sp.Popen(["notify-send", "Operation Completed!", "--icon=$HOME/Aricon_python_git/icons/converter.svg"])
         self.finish_dialog = QDialog()
         self.finish_dialog.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;") #dark style for myself
         self.vbox_finish = QVBoxLayout()
         self.finish_dialog.setLayout(self.vbox_finish)
-        self.file_info = QLineEdit("Operation finished successfuly!\nFile Name: {}\nOperation: {}".format(self.input_,self.edit_mode))
+        self.file_info = QTextEdit("Operation finished successfuly!\nFile Name: {}\nOperation: {}".format(self.input_,self.edit_mode))
         self.open_finish = QPushButton("Open")
         self.open_finish.setIcon(QIcon("icons/file.svg"))
         self.open_finish.pressed.connect(lambda: self.open_finish_func("file"))
@@ -432,22 +483,34 @@ class MainWindow(QMainWindow):
         self.close_finish.setIcon(QIcon("icons/remove.svg"))
         self.close_finish.pressed.connect(lambda: self.finish_dialog.close())
         self.vbox_finish.addWidget(self.file_info)
+        self.hbox_finish = QHBoxLayout()
         for i in [self.open_finish,self.openf_finish,self.close_finish]:
-            self.vbox_finish.addWidget(i)
-            self.vbox_finish.setAlignment(i, Qt.AlignBottom | Qt.AlignRight)
+            self.hbox_finish.addWidget(i)
+        self.vbox_finish.addLayout(self.hbox_finish)
+        self.vbox_finish.setAlignment(self.hbox_finish, Qt.AlignBottom | Qt.AlignRight)
         self.finish_dialog.setMinimumSize(640,250)
         self.finish_dialog.setMaximumSize(640,250)
         self.finish_dialog.setWindowTitle("Operation Completed!")
         self.finish_dialog.setWindowIcon(QIcon("icons/converter.png"))
         self.finish_dialog.show()
 
+    def cancel(self):
+        os.system("killall ffmpeg")
+        self.progress_win.close()
+
     def open_finish_func(self,mode):
         if mode == "file":
-            if os.path.isfile(self.input_):
-                osCommands.xdgOpen(self.input_)
+                #sp.Popen(["xdg-open", self.input_])
+                os.system("xdg-open {}".format(self.input_))
         if mode == "folder":
-            if os.path.isfile(self.input_):
-                osCommands.xdgOpen(self.input_, 'folder', 'file')
+            path = path.split("/")
+            path.pop()
+            path.pop(0)
+            for i in path:
+                path = path+"/"+i
+            path = path+"/"
+            #sp.Popen(["xdg-open", path])
+            os.system("xdg-open {}".format(path))
 
     def open(self,mode):
         if mode == "video_in_burn":
@@ -466,32 +529,42 @@ class MainWindow(QMainWindow):
         if mode == "vid_in_novid":
             vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
             self.line_in_novid.setText(vid[0])
-            self.vid_in_novid = vid[0]
+            self.vid_in_novid = ("{}".format(vid[0]))
 
         if mode == "audio_out_novid":
             audio=QFileDialog.getSaveFileName(self,'Save the Audio', "", '')
             self.line_out_novid.setText(audio[0])
-            self.audio_out_novid = audio[0]
+            self.audio_out_novid = ("{}".format(audio[0]))
+
+        if mode == "vid_in_noaudio":
+            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
+            self.line_in_noaudio.setText(vid[0])
+            self.vid_in_noaudio = ("{}".format(vid[0]))
+
+        if mode == "vid_out_noaudio":
+            vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
+            self.line_out_noaudio.setText(vid[0])
+            self.vid_out_noaudio = ("{}".format(vid[0]))
 
         if mode == "vid_in_compress":
             vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
             self.line_in_compress.setText(vid[0])
-            self.vid_in_compress = vid[0]
+            self.vid_in_compress = ("{}".format(vid[0]))
 
         if mode == "vid_out_compress":
             vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
             self.line_out_compress.setText(vid[0])
-            self.vid_out_compress = vid[0]
+            self.vid_out_compress = ("{}".format(vid[0]))
 
         if mode == "vid_in_res":
             vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
             self.line_in_res.setText(vid[0])
-            self.vid_in_res = vid[0]
+            self.vid_in_res = ("{}".format(vid[0]))
 
         if mode == "vid_out_res":
             vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
             self.line_out_res.setText(vid[0])
-            self.vid_out_res = vid[0]
+            self.vid_out_res = ("{}".format(vid[0]))
 
 
 if __name__ == "__main__":
