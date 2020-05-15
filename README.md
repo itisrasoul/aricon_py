@@ -15,5 +15,9 @@ Aricon is a simple GUI for ffmpeg written with python and Qt.
 * More features coming soon!
 
 
+### I used persepolis download manager's papirus icon pack, here's their project link: 
+* https://github.com/persepolisdm/persepolis
+* Papirus project link: https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
 
-# Special Thanks to @nelforza for the idea, You can see the original GUI written with zenity and bash script here: https://github.com/nelforza/aricon
+### Special Thanks to @nelforza for the idea, You can see the original GUI written with zenity and bash script here: 
+* https://github.com/nelforza/aricon
