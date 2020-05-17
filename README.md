@@ -34,3 +34,6 @@ Aricon is a simple GUI for ffmpeg written with python and Qt.
 
 ### Special Thanks to @nelforza for the idea, You can see the original GUI written with zenity and bash script here: 
 * https://github.com/nelforza/aricon
+
+### Again Thanks to @fliptopbox for the ffmpeg progress file
+* https://github.com/fliptopbox/nuke/blob/master/python/misc/ffmpeg-progress.py
