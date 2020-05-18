@@ -514,57 +514,69 @@ class MainWindow(QMainWindow):
 
     def open(self,mode):
         if mode == "video_in_burn":
-            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
-            self.line_in_vid_burn.setText(vid[0])
+            vid=QFileDialog.getOpenFileName(self.burn_win,'Open the Video', "", '')
             self.vid_in_burn = ("{}".format(vid[0]))
+            self.line_in_vid_burn.setText(self.vid_in_burn)
+            self.vid_out_burn = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_burn.setText(self.vid_out_burn)
+            
         if mode == "video_out_burn":
-            vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
+            vid=QFileDialog.getSaveFileName(self.burn_win,'Save the Video', "", '')
             self.line_out_burn.setText(vid[0])
             self.vid_out_burn = ("{}".format(vid[0]))
+
         if mode == "sub_in_burn":
-            sub=QFileDialog.getOpenFileName(self,'Open the Subtitle', "", '')
+            sub=QFileDialog.getOpenFileName(self.burn_win,'Open the Subtitle', "", '')
             self.line_in_sub_burn.setText(sub[0])
             self.sub_burn = ("subtitles='{}'".format(sub[0]))
 
         if mode == "vid_in_novid":
-            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
-            self.line_in_novid.setText(vid[0])
+            vid=QFileDialog.getOpenFileName(self.novid_win,'Open the Video', "", '')
             self.vid_in_novid = ("{}".format(vid[0]))
+            self.line_in_novid.setText(self.vid_in_novid)
+            self.audio_out_novid = ("{0}_{2}.mp3".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_novid.setText(self.audio_out_novid)
 
         if mode == "audio_out_novid":
-            audio=QFileDialog.getSaveFileName(self,'Save the Audio', "", '')
-            self.line_out_novid.setText(audio[0])
+            audio=QFileDialog.getSaveFileName(self.novid_win,'Save the Audio', "", '')
             self.audio_out_novid = ("{}".format(audio[0]))
+            self.line_out_novid.setText(self.audio_out_novid)
 
         if mode == "vid_in_noaudio":
-            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
-            self.line_in_noaudio.setText(vid[0])
+            vid=QFileDialog.getOpenFileName(self.noaudio_win,'Open the Video', "", '')
             self.vid_in_noaudio = ("{}".format(vid[0]))
+            self.line_in_noaudio.setText(self.vid_in_noaudio)
+            self.vid_out_noaudio = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_noaudio.setText(elf.vid_out_noaudio)
 
         if mode == "vid_out_noaudio":
-            vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
-            self.line_out_noaudio.setText(vid[0])
+            vid=QFileDialog.getSaveFileName(self.noaudio_win,'Save the Video', "", '')
             self.vid_out_noaudio = ("{}".format(vid[0]))
+            self.line_out_noaudio.setText(elf.vid_out_noaudio)
 
         if mode == "vid_in_compress":
-            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
-            self.line_in_compress.setText(vid[0])
+            vid=QFileDialog.getOpenFileName(self.compress_win,'Open the Video', "", '')
             self.vid_in_compress = ("{}".format(vid[0]))
+            self.line_in_compress.setText(self.vid_in_compress)
+            self.vid_out_compress = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_compress.setText(self.vid_out_compress)
 
         if mode == "vid_out_compress":
-            vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
-            self.line_out_compress.setText(vid[0])
+            vid=QFileDialog.getSaveFileName(self.compress_win,'Save the Video', "", '')
             self.vid_out_compress = ("{}".format(vid[0]))
+            self.line_out_compress.setText(self.vid_out_compress)
 
         if mode == "vid_in_res":
-            vid=QFileDialog.getOpenFileName(self,'Open the Video', "", '')
-            self.line_in_res.setText(vid[0])
+            vid=QFileDialog.getOpenFileName(self.res_win,'Open the Video', "", '')
             self.vid_in_res = ("{}".format(vid[0]))
+            self.line_in_res.setText(self.vid_in_res)
+            self.vid_out_res = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_res.setText(self.vid_out_res)
 
         if mode == "vid_out_res":
-            vid=QFileDialog.getSaveFileName(self,'Save the Video', "", '')
-            self.line_out_res.setText(vid[0])
+            vid=QFileDialog.getSaveFileName(self.res_win,'Save the Video', "", '')
             self.vid_out_res = ("{}".format(vid[0]))
+            self.line_out_res.setText(self.vid_out_res)
 
 
 if __name__ == "__main__":
