@@ -101,6 +101,12 @@ class MainWindow(QMainWindow):
         self.change_resolution_action.setShortcut("Shift+Ctrl+R") #set shortcut for the action
         self.video_tools_menu.addAction(self.change_resolution_action)
 
+        self.rotate_action = QAction("Rotate Video")
+        self.rotate_action.setIcon(QIcon("icons/play.svg"))
+        self.rotate_action.triggered.connect(self.rotate_win)
+        self.rotate_action.setShortcut("Shift+R")
+        self.video_tools_menu.addAction(self.rotate_action)
+
     def arihis(self): #history window function
         self.history_win = QDialog() #create the history window
         self.history_win.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;")
@@ -360,26 +366,133 @@ class MainWindow(QMainWindow):
         self.res_win.setMaximumSize(700,150)
         self.res_win.show()
 
+    def rotate_win(self):
+        self.rotate_win = QDialog()
+        self.rotate_win.setStyleSheet("background-color: #2b2b2b;color: #B6BAB1;") #dark style for myself
+        self.vbox_rotate = QVBoxLayout()
+        self.rotate_win.setLayout(self.vbox_rotate)
+        self.hbox_in_rotate = QHBoxLayout()
+        self.line_in_rotate = QLineEdit()
+        self.btn_in_rotate = QToolButton()
+        self.btn_in_rotate.setText("...")
+        self.btn_in_rotate.pressed.connect(lambda: self.open("vid_in_rotate"))
+        self.lbl_in_rotate = QLabel("Video Input: ")
+        for i in [self.lbl_in_rotate, self.line_in_rotate, self.btn_in_rotate]:
+            self.hbox_in_rotate.addWidget(i)
+        self.vbox_rotate.addLayout(self.hbox_in_rotate)
+        self.vbox_in_rotate = QVBoxLayout()
+        self.hbox_rotate = QHBoxLayout()
+        self.lbl_rotate = QLabel("Rotation Degree: 90")
+        self.slider_rotate = QSlider(Qt.Horizontal)
+        self.slider_rotate.setMinimum(90)
+        self.slider_rotate.setMaximum(270)
+        self.slider_rotate.valueChanged.connect(lambda: self.value_change())
+        self.chk_clockwise = QCheckBox("ClockWise")
+        self.chk_clockwise.setCheckState(0)
+        for i in [self.lbl_rotate, self.slider_rotate, self.chk_clockwise]:
+            self.hbox_rotate.addWidget(i)
+        self.vbox_rotate.addLayout(self.hbox_rotate)
+        self.hbox_out_rotate = QHBoxLayout()
+        self.line_out_rotate = QLineEdit()
+        self.btn_out_rotate = QToolButton()
+        self.btn_out_rotate.setText("...")
+        self.btn_out_rotate.pressed.connect(lambda: self.open("vid_out_rotate"))
+        self.lbl_out_rotate = QLabel("Video Output: ")
+        for i in [self.lbl_out_rotate, self.line_out_rotate, self.btn_out_rotate]:
+            self.hbox_out_rotate.addWidget(i)
+        self.vbox_rotate.addLayout(self.hbox_out_rotate)
+        self.hbox_btn_rotate = QHBoxLayout()
+        self.start_btn_rotate = QPushButton("Start")
+        self.start_btn_rotate.setIcon(QIcon("icons/play.svg"))
+        self.start_btn_rotate.pressed.connect(lambda: self.rotate_start())
+        self.cancel_btn_rotate = QPushButton("Cancel")
+        self.cancel_btn_rotate.setIcon(QIcon("icons/remove.svg"))
+        self.cancel_btn_rotate.pressed.connect(lambda: self.rotate_win.close())
+        self.hbox_btn_rotate.addWidget(self.start_btn_rotate)
+        self.hbox_btn_rotate.addWidget(self.cancel_btn_rotate)
+        self.chk_quick = QCheckBox("Quick Convert/Rotate - copy the codecs && metadata (Note: Not ALL of the players may support playing it;\n but VLC media player will, in all cases.)")
+        self.vbox_rotate.addWidget(self.chk_quick)
+        self.vbox_rotate.setAlignment(self.chk_quick, Qt.AlignBottom | Qt.AlignLeft)
+        self.vbox_rotate.addLayout(self.hbox_btn_rotate)
+        self.vbox_rotate.setAlignment(self.hbox_btn_rotate, Qt.AlignBottom | Qt.AlignRight)
+        self.rotate_win.setWindowTitle("Rotate Video")
+        self.rotate_win.setWindowIcon(QIcon("icons/play.svg"))
+        self.rotate_win.setMinimumSize(750,180)
+        self.rotate_win.setMaximumSize(750,180)
+        self.rotate_win.show()
+    
+    def rotate_start(self):
+        if self.chk_clockwise.checkState() == 0:
+            if self.chk_quick.checkState() == 0:
+                if self.slider_rotate.value() == 90:
+                    self.rotate_state = ("transpose=2")
+                if self.slider_rotate.value() == 180:
+                    self.rotate_state = ("transpose=2,transpose=2")
+                if self.slider_rotate.value() == 270:
+                    self.rotate_state = ("transpose=2,transpose=2,transpose=2")
+                self.start_("rotate")
+            if self.chk_quick.checkState() == 2:
+                if self.slider_rotate.value() == 90:
+                    self.rotate_state = ("rotate=90")
+                if self.slider_rotate.value() == 180:
+                    self.rotate_state = ("rotate=180")
+                if self.slider_rotate.value() == 270:
+                    self.rotate_state = ("rotate=270")
+                self.start_("quick_rotate")
+        if self.chk_clockwise.checkState() == 2:
+            if self.chk_quick.checkState() == 0:
+                if self.slider_rotate.value() == 90:
+                    self.rotate_state = ("transpose=1")
+                if self.slider_rotate.value() == 180:
+                    self.rotate_state = ("transpose=1,transpose=1")
+                if self.slider_rotate.value() == 270:
+                    self.rotate_state = ("transpose=1,transpose=1,transpose=1")
+                self.start_("rotate")
+            if self.chk_quick.checkState() == 2:
+                if self.slider_rotate.value() == 90:
+                    self.rotate_state = ("rotate=-90")
+                if self.slider_rotate.value() == 180:
+                    self.rotate_state = ("rotate=-180")
+                if self.slider_rotate.value() == 270:
+                    self.rotate_state = ("rotate=-270")
+                self.start_("quick_rotate")
+
+    def value_change(self):
+        if self.slider_rotate.value() in range(91,180):
+            self.slider_rotate.setValue(180)
+        if self.slider_rotate.value() in range(181,270):
+            self.slider_rotate.setValue(270)
+        
+        self.lbl_rotate.setText("Rotation Degree: {}".format(self.slider_rotate.value()))
+
     def start_(self,mode):
         if mode == "sub_burn":
-            self.progress(['ffmpeg', '-nostats', '-i', self.vid_in_burn, '-vf', self.sub_burn, self.vid_out_burn], self.vid_in_burn, self.vid_out_burn, "Subtitle Burn")
-            self.command = [ '-vf', self.sub_burn, self.vid_out_burn]
+            self.progress(['ffmpeg', '-nostats', '-i', self.line_in_vid_burn.text(), '-vf', self.sub_burn, self.line_out_burn.text()], self.line_in_vid_burn.text(), self.line_out_burn.text(), "Subtitle Burn")
+            self.command = [ '-vf', self.sub_burn, self.line_out_burn.text()]
 
         if mode == "novid":
-            self.progress(['ffmpeg', '-i', self.vid_in_novid, '-vn', '-acodec', 'libmp3lame', self.audio_out_novid], self.vid_in_novid, self.audio_out_novid, "Removed Video")
-            self.command = [ '-vn', '-acodec', 'libmp3lame', self.audio_out_novid]
+            self.progress(['ffmpeg', '-i', self.line_in_novid.text(), '-vn', '-acodec', 'libmp3lame', self.line_out_novid.text()], self.line_in_novid.text(), self.line_out_novid.text(), "Removed Video")
+            self.command = [ '-vn', '-acodec', 'libmp3lame', self.line_out_novid.text()]
 
         if mode == "noaudio":
-            self.progress(['ffmpeg', '-i', self.vid_in_noaudio, '-an', '-c', 'copy', self.vid_out_noaudio], self.vid_in_noaudio, self.vid_out_noaudio, "Removed the Audio Track")
-            self.command = [ '-an', '-c', 'copy', self.vid_out_noaudio]
+            self.progress(['ffmpeg', '-i', self.line_in_noaudio.text(), '-an', '-c', 'copy', self.line_out_noaudio.text()], self.line_in_noaudio.text(), self.line_out_noaudio.text(), "Removed the Audio Track")
+            self.command = [ '-an', '-c', 'copy', self.line_out_noaudio.text()]
 
         if mode == "compress":
-            self.progress(['ffmpeg', '-i', self.vid_in_compress, self.vid_out_compress], self.vid_in_compress, self.vid_out_compress, "Video Compression")
-            self.command = [ self.vid_out_compress]
+            self.progress(['ffmpeg', '-i', self.line_in_compress.text(), self.line_out_compress.text()], self.line_in_compress.text(), self.line_out_compress.text(), "Video Compression")
+            self.command = [ self.line_out_compress.text()]
 
         if mode == "resolution":
-            self.progress(['ffmpeg', '-i', self.vid_in_res, '-s', self.line_res.text(), self.vid_out_res], self.vid_in_res, self.vid_out_res, "Resolution Change")
-            self.command = [ '-s', self.line_res.text(), self.vid_out_res]
+            self.progress(['ffmpeg', '-i', self.line_in_res.text(), '-s', self.line_res.text(), self.line_out_res.text()], self.line_in_res.text(), self.line_out_res.text(), "Resolution Change")
+            self.command = [ '-s', self.line_res.text(), self.line_out_res.text()]
+
+        if mode == "rotate":
+            self.progress(['ffmpeg', '-i', self.line_in_rotate.text(), '-vf', self.rotate_state, self.line_out_rotate.text()], self.line_in_rotate.text(), self.line_out_rotate.text(), "Rotate Video")
+            self.command = [ '-vf', self.rotate_state, self.line_out_rotate.text()]
+
+        if mode == "quick_rotate":
+            self.progress(['ffmpeg', '-i', self.line_in_rotate.text(), '-c', 'copy', '-metadata:s:v:0', self.rotate_state, self.line_out_rotate.text()], self.line_in_rotate.text(), self.line_out_rotate.text(), "Rotate Video(Quick)")
+            self.command = [ '-c', 'copy', '-metadata:s:v:0', self.rotate_state, self.line_out_rotate.text()]
 
     def refresh_history(self):
         self.history = open("arihis")
@@ -500,7 +613,6 @@ class MainWindow(QMainWindow):
 
     def open_finish_func(self,mode):
         if mode == "file":
-                #sp.Popen(["xdg-open", self.input_])
                 os.system("xdg-open {}".format(self.input_))
         if mode == "folder":
             path = path.split("/")
@@ -509,74 +621,85 @@ class MainWindow(QMainWindow):
             for i in path:
                 path = path+"/"+i
             path = path+"/"
-            #sp.Popen(["xdg-open", path])
             os.system("xdg-open {}".format(path))
 
     def open(self,mode):
         if mode == "video_in_burn":
-            vid=QFileDialog.getOpenFileName(self.burn_win,'Open the Video', "", '')
+            vid=QFileDialog.getOpenFileName(self.burn_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_in_burn = ("{}".format(vid[0]))
             self.line_in_vid_burn.setText(self.vid_in_burn)
             self.vid_out_burn = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
             self.line_out_burn.setText(self.vid_out_burn)
             
         if mode == "video_out_burn":
-            vid=QFileDialog.getSaveFileName(self.burn_win,'Save the Video', "", '')
+            vid=QFileDialog.getSaveFileName(self.burn_win,'Save the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.line_out_burn.setText(vid[0])
             self.vid_out_burn = ("{}".format(vid[0]))
 
         if mode == "sub_in_burn":
-            sub=QFileDialog.getOpenFileName(self.burn_win,'Open the Subtitle', "", '')
+            sub=QFileDialog.getOpenFileName(self.burn_win,'Open the Subtitle', "", 'Subtitle File (*.sub)')
             self.line_in_sub_burn.setText(sub[0])
             self.sub_burn = ("subtitles='{}'".format(sub[0]))
 
         if mode == "vid_in_novid":
-            vid=QFileDialog.getOpenFileName(self.novid_win,'Open the Video', "", '')
+            vid=QFileDialog.getOpenFileName(self.novid_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_in_novid = ("{}".format(vid[0]))
             self.line_in_novid.setText(self.vid_in_novid)
             self.audio_out_novid = ("{0}_{2}.mp3".format(*os.path.splitext(vid[0]) + ('output',)))
             self.line_out_novid.setText(self.audio_out_novid)
 
         if mode == "audio_out_novid":
-            audio=QFileDialog.getSaveFileName(self.novid_win,'Save the Audio', "", '')
+            audio=QFileDialog.getSaveFileName(self.novid_win,'Save the Audio', "", 'Audio Files (*.mp3 *.wav);; All Files (*)')
             self.audio_out_novid = ("{}".format(audio[0]))
             self.line_out_novid.setText(self.audio_out_novid)
 
         if mode == "vid_in_noaudio":
-            vid=QFileDialog.getOpenFileName(self.noaudio_win,'Open the Video', "", '')
+            vid=QFileDialog.getOpenFileName(self.noaudio_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_in_noaudio = ("{}".format(vid[0]))
             self.line_in_noaudio.setText(self.vid_in_noaudio)
             self.vid_out_noaudio = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
             self.line_out_noaudio.setText(elf.vid_out_noaudio)
 
         if mode == "vid_out_noaudio":
-            vid=QFileDialog.getSaveFileName(self.noaudio_win,'Save the Video', "", '')
+            vid=QFileDialog.getSaveFileName(self.noaudio_win,'Save the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_out_noaudio = ("{}".format(vid[0]))
             self.line_out_noaudio.setText(elf.vid_out_noaudio)
 
         if mode == "vid_in_compress":
-            vid=QFileDialog.getOpenFileName(self.compress_win,'Open the Video', "", '')
+            vid=QFileDialog.getOpenFileName(self.compress_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_in_compress = ("{}".format(vid[0]))
             self.line_in_compress.setText(self.vid_in_compress)
             self.vid_out_compress = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
             self.line_out_compress.setText(self.vid_out_compress)
 
         if mode == "vid_out_compress":
-            vid=QFileDialog.getSaveFileName(self.compress_win,'Save the Video', "", '')
+            vid=QFileDialog.getSaveFileName(self.compress_win,'Save the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_out_compress = ("{}".format(vid[0]))
             self.line_out_compress.setText(self.vid_out_compress)
 
         if mode == "vid_in_res":
-            vid=QFileDialog.getOpenFileName(self.res_win,'Open the Video', "", '')
+            vid=QFileDialog.getOpenFileName(self.res_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_in_res = ("{}".format(vid[0]))
             self.line_in_res.setText(self.vid_in_res)
             self.vid_out_res = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
             self.line_out_res.setText(self.vid_out_res)
 
         if mode == "vid_out_res":
-            vid=QFileDialog.getSaveFileName(self.res_win,'Save the Video', "", '')
+            vid=QFileDialog.getSaveFileName(self.res_win,'Save the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
             self.vid_out_res = ("{}".format(vid[0]))
             self.line_out_res.setText(self.vid_out_res)
+
+        if mode == "vid_in_rotate":
+            vid=QFileDialog.getOpenFileName(self.rotate_win,'Open the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
+            self.vid_in_rotate = ("{}".format(vid[0]))
+            self.line_in_rotate.setText(self.vid_in_rotate)
+            self.vid_out_rotate = ("{0}_{2}{1}".format(*os.path.splitext(vid[0]) + ('output',)))
+            self.line_out_rotate.setText(self.vid_out_rotate)
+
+        if mode == "vid_out_rotate":
+            vid=QFileDialog.getSaveFileName(self.rotate_win,'Save the Video', "", 'Video Files (*.mp4 *.mkv *.avi);; All Files (*)')
+            self.vid_out_rotate = ("{}".format(vid[0]))
+            self.line_out_rotate.setText(self.vid_out_rotate)
 
 
 if __name__ == "__main__":
