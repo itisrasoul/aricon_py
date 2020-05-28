@@ -46,7 +46,7 @@ class MainWindow(QMainWindow):
         self.main_vbox.addWidget(self.main_lbl_intro) #add introduction label
         self.main_vbox.setAlignment(self.main_lbl_intro, Qt.AlignHCenter) #set alignment
 
-        self.setWindowTitle("Aricon 3.0") #set window title
+        self.setWindowTitle("Aricon 3.1") #set window title
         self.setWindowIcon(QIcon("icons/converter.png")) #set the window icon
         self.setMinimumSize(800,600) #set window min and max size
         self.setMaximumSize(800,600)
